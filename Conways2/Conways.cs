@@ -33,7 +33,7 @@ namespace Conways2
         [Test]
         public void CoordinateFinder()
         {
-            var neighbours = new Conways().CordsFor(new Cell(1, 1), 1, 1);
+            var neighbours = new Conways().CordsFor(new Cell(1, 1));
 
             Assert.Contains(new Cell(0, 0), neighbours);
             Assert.Contains(new Cell(0, 1), neighbours);
@@ -54,7 +54,6 @@ namespace Conways2
             var expected = new Dictionary<Cell, int> { { new Cell(1, 1), 2 } };
             CollectionAssert.AreEquivalent(expected, freqs);
         }
-
     }
 
 
@@ -83,13 +82,13 @@ namespace Conways2
             return false;
         }
 
-        public List<Cell> CordsFor(Cell cell, int x, int y)
+        public List<Cell> CordsFor(Cell cell)
         {
             return new List<Cell>
             {
-                new Cell(x-1, y+1), new Cell(x, y+1), new Cell(x+1, y+1),
-                new Cell(x-1, y),                     new Cell(x+1, y),
-                new Cell(x-1, y-1), new Cell(x, y-1), new Cell(x+1, y-1)
+                new Cell(cell.X-1, cell.Y+1), new Cell(cell.X, cell.Y+1), new Cell(cell.X+1, cell.Y+1),
+                new Cell(cell.X-1, cell.Y),                               new Cell(cell.X+1, cell.Y),
+                new Cell(cell.X-1, cell.Y-1), new Cell(cell.X, cell.Y-1), new Cell(cell.X+1, cell.Y-1)
             };
         }
     }

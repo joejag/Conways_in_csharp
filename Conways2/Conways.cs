@@ -1,79 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NUnit.Framework;
 
 namespace Conways2
 {
-    public class ConwaysTests
-    {
-        [TestCase(0, false)]
-        [TestCase(1, false)]
-        [TestCase(2, true)]
-        [TestCase(3, true)]
-        [TestCase(4, false)]
-        public void TheRulesWhenAlive(int neighbourCount, bool expectation)
-        {
-            Assert.AreEqual(expectation, new Conways().Survives(neighbourCount, true));
-        }
-
-        [TestCase(0, false)]
-        [TestCase(1, false)]
-        [TestCase(2, false)]
-        [TestCase(3, true)]
-        [TestCase(4, false)]
-        public void TheRulesWhenDead(int neighbourCount, bool expectation)
-        {
-            Assert.AreEqual(expectation, new Conways().Survives(neighbourCount, false));
-        }
-
-        [Test]
-        public void CoordinateFinder()
-        {
-            var neighbours = new Conways().CordsFor(new Cell(1, 1));
-
-            Assert.Contains(new Cell(0, 0), neighbours);
-            Assert.Contains(new Cell(0, 1), neighbours);
-            Assert.Contains(new Cell(0, 2), neighbours);
-
-            Assert.Contains(new Cell(1, 0), neighbours);
-            Assert.Contains(new Cell(1, 2), neighbours);
-
-            Assert.Contains(new Cell(2, 0), neighbours);
-            Assert.Contains(new Cell(2, 1), neighbours);
-            Assert.Contains(new Cell(2, 2), neighbours);
-        }
-
-        [Test]
-        public void Frequencies()
-        {
-            var freqs = new Conways().Frequencies(new List<Cell> { new Cell(1, 1), new Cell(1, 1) });
-            var expected = new Dictionary<Cell, int> { { new Cell(1, 1), 2 } };
-            CollectionAssert.AreEquivalent(expected, freqs);
-        }
-    }
-
-
     public class Conways
     {
-        public Dictionary<Cell, int> Frequencies(List<Cell> allNeighbours)
-        {
-            var result = new Dictionary<Cell, int>();
-
-            foreach (var neighbour in allNeighbours)
-            {
-                if (result.ContainsKey(neighbour))
-                    result[neighbour] = result[neighbour] + 1;
-                else
-                    result[neighbour] = 1;
-            }
-
-            return result;
-        }
-
         public bool Survives(int neighbourCount, bool alive)
         {
             if (alive && (neighbourCount == 2 || neighbourCount == 3)) return true;
@@ -90,6 +21,20 @@ namespace Conways2
                 new Cell(cell.X-1, cell.Y),                               new Cell(cell.X+1, cell.Y),
                 new Cell(cell.X-1, cell.Y-1), new Cell(cell.X, cell.Y-1), new Cell(cell.X+1, cell.Y-1)
             };
+        }
+
+        public Dictionary<Cell, int> Frequencies(IEnumerable<Cell> allNeighbours)
+        {
+            return allNeighbours.GroupBy(x => x).ToDictionary(g => g.Key, g => g.Count());
+        }
+
+        public HashSet<Cell> NextIteration(HashSet<Cell> world)
+        {
+            var neighbouringCells = world.SelectMany(CordsFor);
+            var frequencies = Frequencies(neighbouringCells);
+            var newWorld = frequencies.Where(x => Survives(x.Value, world.Contains(x.Key))).Select(x => x.Key);
+
+            return new HashSet<Cell>(newWorld);
         }
     }
 
@@ -123,6 +68,11 @@ namespace Conways2
             {
                 return (X * 397) ^ Y;
             }
+        }
+
+        public override string ToString()
+        {
+            return $"[Cell: {X}, {Y}]";
         }
     }
 }

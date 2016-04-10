@@ -13,7 +13,35 @@ namespace Conways2
             return false;
         }
 
-        public List<Cell> NeighboursOf(Cell cell)
+        public HashSet<Cell> NextIteration(HashSet<Cell> world)
+        {
+            var howOftenACellIsNeighbour = FindHowOftenANeighbourIsReferenced(world);
+            var theNewWorld = ApplyTheSurvivalRules(world, howOftenACellIsNeighbour);
+
+            return new HashSet<Cell>(theNewWorld);
+        }
+
+        private Dictionary<Cell, int> FindHowOftenANeighbourIsReferenced(HashSet<Cell> world)
+        {
+            return CellMaths.Frequencies(CellMaths.AllNeighbours(world));
+        }
+
+        private IEnumerable<Cell> ApplyTheSurvivalRules(HashSet<Cell> world, Dictionary<Cell, int> howOftenACellIsNeighbour)
+        {
+            return howOftenACellIsNeighbour
+                .Where(x => Survives(x.Value, world.Contains(x.Key)))
+                .Select(x => x.Key);
+        }
+    }
+
+    public class CellMaths
+    {
+        public static IEnumerable<Cell> AllNeighbours(HashSet<Cell> world)
+        {
+            return world.SelectMany(NeighboursOf);
+        }
+
+        public static List<Cell> NeighboursOf(Cell cell)
         {
             return new List<Cell>
             {
@@ -23,32 +51,11 @@ namespace Conways2
             };
         }
 
-        public HashSet<Cell> NextIteration(HashSet<Cell> world)
-        {
-            var frequencies = FindHowOftenANeighbourIsReferenced(world);
-            var newWorld = ApplyTheSurvivalRules(world, frequencies);
-
-            return new HashSet<Cell>(newWorld);
-        }
-
-        private Dictionary<Cell, int> FindHowOftenANeighbourIsReferenced(HashSet<Cell> world)
-        {
-            var allNeighbours = world.SelectMany(NeighboursOf);
-            return Frequencies(allNeighbours);
-        }
-
-        public Dictionary<Cell, int> Frequencies(IEnumerable<Cell> allNeighbours)
+        public static Dictionary<Cell, int> Frequencies(IEnumerable<Cell> allNeighbours)
         {
             return allNeighbours
                 .GroupBy(x => x)
                 .ToDictionary(g => g.Key, g => g.Count());
-        }
-
-        private IEnumerable<Cell> ApplyTheSurvivalRules(HashSet<Cell> world, Dictionary<Cell, int> frequencies)
-        {
-            return frequencies
-                .Where(x => Survives(x.Value, world.Contains(x.Key)))
-                .Select(x => x.Key);
         }
     }
 
@@ -61,6 +68,11 @@ namespace Conways2
         {
             X = x;
             Y = y;
+        }
+
+        public override string ToString()
+        {
+            return $"[Cell: {X}, {Y}]";
         }
 
         protected bool Equals(Cell other)
@@ -82,11 +94,6 @@ namespace Conways2
             {
                 return (X * 397) ^ Y;
             }
-        }
-
-        public override string ToString()
-        {
-            return $"[Cell: {X}, {Y}]";
         }
     }
 }

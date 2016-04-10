@@ -28,7 +28,7 @@ namespace Conways2
         [Test]
         public void CoordinateFinder()
         {
-            var neighbours = new Conways().CordsFor(new Cell(1, 1));
+            var neighbours = new Conways().NeighboursOf(new Cell(1, 1));
 
             Assert.Contains(new Cell(0, 0), neighbours);
             Assert.Contains(new Cell(0, 1), neighbours);
